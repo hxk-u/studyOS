@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="StudyOS"/>
+<meta name="theme-color" content="#0a0a0f"/>
+<title>StudyOS — Exam Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --bg: #0a0a0f;
+  --surface: #13131a;
+  --surface2: #1c1c26;
+  --border: rgba(255,255,255,0.07);
+  --text: #f0f0f5;
+  --muted: rgba(240,240,245,0.45);
+  --accent: #7c6af7;
+  --accent2: #4ecdc4;
+  --accent3: #ff6b6b;
+  --amber: #ffd166;
+  --green: #06d6a0;
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.app {
+  max-width: 430px;
+  margin: 0 auto;
+  padding-bottom: 90px;
+  min-height: 100vh;
+}
+
+.header {
+  padding: 52px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 100;
+}
+
+.header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.header h1 { font-family: var(--font-head); font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+.header h1 span { color: var(--accent); }
+
+.date-badge {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 13px;
+  font-size: 11px;
+  color: var(--muted);
+  font-family: var(--font-head);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.days-left { margin-top: 10px; display: flex; gap: 8px; align-items: center; }
+.days-pill {
+  background: linear-gradient(135deg, var(--accent), #a78bfa);
+  border-radius: 20px;
+  padding: 4px 13px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-head);
+  color: white;
+}
+.days-text { font-size: 12px; color: var(--muted); }
+
+.nav {
+  display: flex;
+  background: var(--surface);
+  border-radius: 14px;
+  margin: 12px 0 0;
+  padding: 4px;
+  border: 1px solid var(--border);
+}
+.nav-btn {
+  flex: 1;
+  padding: 9px 4px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-head);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: all 0.2s;
+}
+.nav-btn.active {
+  background: var(--surface2);
+  color: var(--text);
+  box-shadow: 0 1px 8px rgba(0,0,0,0.4);
+}
+
+.section { display: none; padding: 20px; }
+.section.active { display: block; }
+
+.exam-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.exam-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.exam-card.hsk::before { background: linear-gradient(90deg, var(--accent), #a78bfa); }
+.exam-card.csca::before { background: linear-gradient(90deg, var(--accent2), #06d6a0); }
+.exam-card.lang::before { background: linear-gradient(90deg, var(--amber), #ff9f43); }
+.exam-card.maths::before { background: linear-gradient(90deg, var(--accent3), #ff9f43); }
+.exam-card.physics::before { background: linear-gradient(90deg, #4ecdc4, #45b7d1); }
+
+.card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+.card-title { font-family: var(--font-head); font-size: 15px; font-weight: 700; }
+.card-subtitle { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.card-date {
+  font-size: 10px;
+  font-family: var(--font-head);
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: var(--surface2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.progress-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.progress-label { font-size: 11px; color: var(--muted); min-width: 80px; }
+.progress-bar-wrap { flex: 1; background: var(--surface2); border-radius: 99px; height: 6px; overflow: hidden; }
+.progress-bar { height: 100%; border-radius: 99px; transition: width 0.4s ease; }
+.hsk .progress-bar { background: linear-gradient(90deg, var(--accent), #a78bfa); }
+.csca .progress-bar { background: linear-gradient(90deg, var(--accent2), #06d6a0); }
+.lang .progress-bar { background: linear-gradient(90deg, var(--amber), #ff9f43); }
+.maths .progress-bar { background: linear-gradient(90deg, var(--accent3), #ff9f43); }
+.physics .progress-bar { background: linear-gradient(90deg, #4ecdc4, #45b7d1); }
+.progress-pct { font-size: 11px; font-weight: 700; font-family: var(--font-head); min-width: 32px; text-align: right; }
+
+.input-row { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
+.input-row input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  outline: none;
+  transition: border 0.2s;
+  -webkit-appearance: none;
+}
+.input-row input:focus { border-color: var(--accent); }
+.input-row input::placeholder { color: var(--muted); }
+
+.btn {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-head);
+  font-size: 12px;
+  font-weight: 700;
+  transition: all 0.15s;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+.btn-accent { background: var(--accent); color: white; }
+.btn-accent:active { opacity: 0.8; transform: scale(0.97); }
+.btn-teal { background: var(--accent2); color: #0a0a0f; }
+.btn-red { background: var(--accent3); color: white; }
+.btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+
+.stat-row { display: flex; gap: 8px; margin-top: 12px; }
+.stat-box {
+  flex: 1;
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+.stat-num { font-family: var(--font-head); font-size: 20px; font-weight: 800; }
+.stat-lbl { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+.section-title {
+  font-family: var(--font-head);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.day-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.day-header {
+  padding: 15px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+.day-name { font-family: var(--font-head); font-size: 15px; font-weight: 700; }
+.day-meta { display: flex; align-items: center; gap: 10px; }
+.day-score { font-family: var(--font-head); font-size: 13px; font-weight: 700; color: var(--accent); }
+.chevron { font-size: 12px; color: var(--muted); transition: transform 0.2s; }
+.chevron.open { transform: rotate(180deg); }
+
+.day-blocks { padding: 0 18px 14px; display: none; }
+.day-blocks.open { display: block; }
+.block-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 0;
+  border-top: 1px solid var(--border);
+}
+.block-check {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  border: 2px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+.block-check.done { background: var(--green); border-color: var(--green); }
+.block-info { flex: 1; }
+.block-time { font-size: 10px; color: var(--muted); font-family: var(--font-head); font-weight: 600; }
+.block-name { font-size: 13px; margin-top: 2px; line-height: 1.3; }
+.block-tag {
+  font-size: 9px;
+  font-family: var(--font-head);
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+.tag-hsk { background: rgba(124,106,247,0.15); color: #a78bfa; }
+.tag-math { background: rgba(255,107,107,0.15); color: #ff9f9f; }
+.tag-phys { background: rgba(78,205,196,0.15); color: #4ecdc4; }
+.tag-class { background: rgba(255,209,102,0.15); color: var(--amber); }
+.tag-lang { background: rgba(255,150,50,0.12); color: #ff9f43; }
+.tag-rest { background: rgba(255,255,255,0.06); color: var(--muted); }
+
+.discipline-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 14px;
+}
+.discipline-title { font-family: var(--font-head); font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.discipline-sub { font-size: 12px; color: var(--muted); margin-bottom: 16px; line-height: 1.5; }
+
+.check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.check-item {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+.check-item.checked { border-color: var(--green); background: rgba(6,214,160,0.08); }
+.check-item-icon { font-size: 22px; margin-bottom: 6px; }
+.check-item-label { font-size: 12px; font-weight: 500; line-height: 1.3; }
+.check-item-sub { font-size: 10px; color: var(--muted); margin-top: 3px; line-height: 1.3; }
+.check-item.checked .check-item-label { color: var(--green); }
+
+.streak-row { display: flex; gap: 5px; margin-top: 14px; flex-wrap: wrap; }
+.streak-dot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-family: var(--font-head);
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.streak-dot.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+.note-area {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  resize: none;
+  outline: none;
+  margin-top: 10px;
+  transition: border 0.2s;
+  line-height: 1.6;
+  -webkit-appearance: none;
+}
+.note-area:focus { border-color: var(--accent); }
+
+.vocab-phase {
+  background: linear-gradient(135deg, rgba(124,106,247,0.12), rgba(167,139,250,0.06));
+  border: 1px solid rgba(124,106,247,0.3);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.phase-label { font-size: 10px; font-family: var(--font-head); font-weight: 700; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; }
+.phase-title { font-family: var(--font-head); font-size: 18px; font-weight: 800; margin-top: 4px; }
+.phase-sub { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+
+.motivate-card {
+  background: linear-gradient(135deg, rgba(6,214,160,0.08), rgba(78,205,196,0.04));
+  border: 1px solid rgba(6,214,160,0.2);
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 14px;
+}
+.motivate-card p { font-size: 13px; color: var(--muted); line-height: 1.8; }
+.motivate-card p strong { color: var(--text); font-weight: 500; }
+
+.saved-toast {
+  font-size: 11px;
+  color: var(--green);
+  margin-top: 7px;
+  display: none;
+  font-family: var(--font-head);
+  font-weight: 600;
+}
+
+.set-label {
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 5px;
+  font-family: var(--font-head);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-top: 12px;
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <h1>Study<span>OS</span></h1>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;font-family:var(--font-body);">蒙古2501 · Exam Tracker</div>
+      </div>
+      <div class="date-badge" id="dateBadge">—</div>
+    </div>
+    <div class="days-left">
+      <div class="days-pill" id="daysLeftPill">— days</div>
+      <div class="days-text">until first exam · Jun 26</div>
+    </div>
+    <div class="nav">
+      <button class="nav-btn active" onclick="switchTab('today',this)">Today</button>
+      <button class="nav-btn" onclick="switchTab('exams',this)">Exams</button>
+      <button class="nav-btn" onclick="switchTab('schedule',this)">Schedule</button>
+      <button class="nav-btn" onclick="switchTab('discipline',this)">Discipline</button>
+    </div>
+  </div>
+
+  <!-- TODAY TAB -->
+  <div id="tab-today" class="section active">
+    <div class="vocab-phase">
+      <div class="phase-label">Current Phase</div>
+      <div class="phase-title">Vocabulary Blitz 📚</div>
+      <div class="phase-sub">Finish all 1300 HSK 5 words → switch to mock exams + audio from Jun 1</div>
+    </div>
+
+    <div class="exam-card hsk">
+      <div class="card-header">
+        <div>
+          <div class="card-title">HSK 5 Vocabulary</div>
+          <div class="card-subtitle">Overall progress toward 1300 words</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:var(--font-head);font-size:30px;font-weight:800;color:var(--accent);line-height:1;" id="todayWordsDisplay">0</div>
+          <div style="font-size:10px;color:var(--muted);">added today</div>
+        </div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label" style="font-size:10px;">Total done</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="vocabBar" style="width:0%"></div></div>
+        <div class="progress-pct" id="vocabPct" style="color:var(--accent);">0%</div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-box">
+          <div class="stat-num" id="wordsTotalDisp" style="color:var(--accent);">0</div>
+          <div class="stat-lbl">done</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="wordsLeftDisp" style="color:var(--amber);">1300</div>
+          <div class="stat-lbl">left</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="wordsPerDayDisp" style="color:var(--green);">—</div>
+          <div class="stat-lbl">per day</div>
+        </div>
+      </div>
+
+      <div class="input-row">
+        <input type="number" id="wordInput" placeholder="Words learned today..." min="0"/>
+        <button class="btn btn-accent" onclick="addWords()">+ Add</button>
+      </div>
+
+      <div class="set-label">SET TOTAL COMPLETED</div>
+      <div class="input-row" style="margin-top:0;">
+        <input type="number" id="totalInput" placeholder="Total words done so far (e.g. 650)" min="0" max="1300"/>
+        <button class="btn btn-ghost" onclick="setTotal()">Set</button>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-top:4px;">Today's Schedule</div>
+    <div id="todayBlocks"></div>
+  </div>
+
+  <!-- EXAMS TAB -->
+  <div id="tab-exams" class="section">
+    <div class="section-title">Exam Progress</div>
+
+    <div class="exam-card lang">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Language Program Finals</div>
+          <div class="card-subtitle">综合 · 听力 · 口语 · 阅读</div>
+        </div>
+        <div class="card-date">JUN 26</div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label">Chinese vocab</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="langBar" style="width:0%"></div></div>
+        <div class="progress-pct" id="langPct">0%</div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label">Mock practice</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="langBar2" style="width:0%"></div></div>
+        <div class="progress-pct" id="langPct2">0%</div>
+      </div>
+      <div class="input-row">
+        <input type="number" id="langVocab" placeholder="Vocab %" min="0" max="100"/>
+        <input type="number" id="langMock" placeholder="Mock %" min="0" max="100"/>
+        <button class="btn btn-accent" onclick="updateLang()">Save</button>
+      </div>
+    </div>
+
+    <div class="exam-card csca">
+      <div class="card-header">
+        <div>
+          <div class="card-title">CSCA — Chinese</div>
+          <div class="card-subtitle">Academic Chinese · STEM vocabulary</div>
+        </div>
+        <div class="card-date">JUN 27</div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label">Vocab done</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="cscaChBar" style="width:0%"></div></div>
+        <div class="progress-pct" id="cscaChPct">0%</div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label">Practice</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="cscaChBar2" style="width:0%"></div></div>
+        <div class="progress-pct" id="cscaChPct2">0%</div>
+      </div>
+      <div class="input-row">
+        <input type="number" id="cscaChVocab" placeholder="Vocab %" min="0" max="100"/>
+        <input type="number" id="cscaChMock" placeholder="Practice %" min="0" max="100"/>
+        <button class="btn btn-teal" onclick="updateCscaCh()">Save</button>
+      </div>
+    </div>
+
+    <div class="exam-card maths">
+      <div class="card-header">
+        <div>
+          <div class="card-title">CSCA — Maths</div>
+          <div class="card-subtitle">Concepts · Formula mastery · Past papers</div>
+        </div>
+        <div class="card-date">JUN 27</div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label">Concepts</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="mathBar" style="width:0%"></div></div>
+        <div class="progress-pct" id="mathPct">0%</div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label">Past papers</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="mathBar2" style="width:0%"></div></div>
+        <div class="progress-pct" id="mathPct2">0%</div>
+      </div>
+      <div class="input-row">
+        <input type="number" id="mathConcept" placeholder="Concepts %" min="0" max="100"/>
+        <input type="number" id="mathPaper" placeholder="Papers %" min="0" max="100"/>
+        <button class="btn btn-red" onclick="updateMath()">Save</button>
+      </div>
+    </div>
+
+    <div class="exam-card physics">
+      <div class="card-header">
+        <div>
+          <div class="card-title">CSCA — Physics</div>
+          <div class="card-subtitle">Mechanics · Electricity · Waves</div>
+        </div>
+        <div class="card-date">JUN 27</div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label">Concepts</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="physBar" style="width:0%"></div></div>
+        <div class="progress-pct" id="physPct">0%</div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label">Past papers</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="physBar2" style="width:0%"></div></div>
+        <div class="progress-pct" id="physPct2">0%</div>
+      </div>
+      <div class="input-row">
+        <input type="number" id="physConcept" placeholder="Concepts %" min="0" max="100"/>
+        <input type="number" id="physPaper" placeholder="Papers %" min="0" max="100"/>
+        <button class="btn btn-teal" onclick="updatePhys()">Save</button>
+      </div>
+    </div>
+
+    <div class="exam-card hsk">
+      <div class="card-header">
+        <div>
+          <div class="card-title">HSK 5</div>
+          <div class="card-subtitle">Listening · Reading · Writing</div>
+        </div>
+        <div class="card-date">JUN 28</div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label">Vocabulary</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="hskVBar" style="width:0%"></div></div>
+        <div class="progress-pct" id="hskVPct">0%</div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label">Mock exams</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="hskMBar" style="width:0%"></div></div>
+        <div class="progress-pct" id="hskMPct">0%</div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label">Listening</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="hskLBar" style="width:0%"></div></div>
+        <div class="progress-pct" id="hskLPct">0%</div>
+      </div>
+      <div class="input-row">
+        <input type="number" id="hskV" placeholder="Vocab %" min="0" max="100"/>
+        <input type="number" id="hskM" placeholder="Mock %" min="0" max="100"/>
+        <input type="number" id="hskL" placeholder="Listen %" min="0" max="100"/>
+        <button class="btn btn-accent" onclick="updateHsk()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCHEDULE TAB -->
+  <div id="tab-schedule" class="section">
+    <div class="section-title">Weekly Schedule</div>
+    <div id="scheduleList"></div>
+  </div>
+
+  <!-- DISCIPLINE TAB -->
+  <div id="tab-discipline" class="section">
+    <div class="section-title">Daily Discipline</div>
+
+    <div class="discipline-card">
+      <div class="discipline-title">Today's Habits</div>
+      <div class="discipline-sub">Tap to mark done — auto resets each day</div>
+      <div class="check-grid" id="habitGrid"></div>
+    </div>
+
+    <div class="discipline-card">
+      <div class="discipline-title">33-Day Streak</div>
+      <div class="discipline-sub">Tap a day to mark as full discipline day. Goal: green every day until Jun 26.</div>
+      <div class="streak-row" id="streakRow"></div>
+    </div>
+
+    <div class="discipline-card">
+      <div class="discipline-title">Daily Note</div>
+      <div class="discipline-sub">What did you nail today? What was hard?</div>
+      <textarea class="note-area" id="dailyNote" rows="5" placeholder="Write anything — wins, struggles, how you feel..."></textarea>
+      <button class="btn btn-accent" style="margin-top:10px;width:100%;" onclick="saveNote()">Save Note</button>
+      <div class="saved-toast" id="noteSaved">✓ Saved</div>
+    </div>
+
+    <div class="motivate-card">
+      <div class="discipline-title" style="margin-bottom:10px;">Remember This</div>
+      <p>
+        Every word you learn today is one less word standing between you and HSK 5.<br><br>
+        Every physics problem you solve is one less problem that can surprise you on Jun 27.<br><br>
+        <strong>The exam doesn't care how tired you are. But it will reward every single hour you put in.</strong>
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const TOTAL_WORDS = 1300;
+const EXAM_DATE = new Date('2026-06-26T00:00:00');
+const MOCK_START = new Date('2026-06-01T00:00:00');
+
+const scheduleData = {
+  Monday: [
+    {time:'6:50–8:10', name:'HSK 5 Vocabulary — 40 new words', tag:'hsk', tagLabel:'HSK'},
+    {time:'8:10–8:30', name:'Break + Breakfast', tag:'rest', tagLabel:'REST'},
+    {time:'8:30–10:00', name:'HSK 5 Vocabulary — 40 more words', tag:'hsk', tagLabel:'HSK'},
+    {time:'10:00–10:20', name:'Travel to class', tag:'rest', tagLabel:'TRANSIT'},
+    {time:'10:20–11:50', name:'初级汉语综合课', tag:'class', tagLabel:'CLASS'},
+    {time:'11:50–12:30', name:'Lunch + Rest', tag:'rest', tagLabel:'REST'},
+    {time:'12:30–14:00', name:'Review morning vocab (Anki)', tag:'hsk', tagLabel:'HSK'},
+    {time:'14:00–14:30', name:'Travel to class', tag:'rest', tagLabel:'TRANSIT'},
+    {time:'14:30–16:00', name:'初级汉语听力课', tag:'class', tagLabel:'CLASS'},
+    {time:'16:00–16:20', name:'Break', tag:'rest', tagLabel:'REST'},
+    {time:'16:20–18:00', name:'CSCA Maths', tag:'math', tagLabel:'MATHS'},
+    {time:'18:00–19:00', name:'Dinner + Rest', tag:'rest', tagLabel:'REST'},
+    {time:'19:00–20:30', name:'CSCA Physics', tag:'phys', tagLabel:'PHYSICS'},
+    {time:'20:30–21:30', name:'Full Anki review — all today\'s words', tag:'hsk', tagLabel:'HSK'},
+  ],
+  Tuesday: [
+    {time:'6:50–8:10', name:'HSK 5 Vocabulary — 40 new words', tag:'hsk', tagLabel:'HSK'},
+    {time:'8:10–8:30', name:'Prep for class', tag:'rest', tagLabel:'TRANSIT'},
+    {time:'8:30–10:00', name:'HSK专项训练 (class)', tag:'class', tagLabel:'CLASS'},
+    {time:'10:00–10:20', name:'Short break', tag:'rest', tagLabel:'REST'},
+    {time:'10:20–11:50', name:'初级汉语阅读课 (class)', tag:'class', tagLabel:'CLASS'},
+    {time:'11:50–12:30', name:'Lunch + Rest', tag:'rest', tagLabel:'REST'},
+    {time:'12:30–14:30', name:'HSK Vocab — 40 new + review morning', tag:'hsk', tagLabel:'HSK'},
+    {time:'14:30–16:00', name:'CSCA Chinese vocabulary', tag:'lang', tagLabel:'CSCA CH'},
+    {time:'16:00–16:20', name:'Break', tag:'rest', tagLabel:'REST'},
+    {time:'16:20–18:00', name:'CSCA Maths', tag:'math', tagLabel:'MATHS'},
+    {time:'18:00–19:00', name:'Dinner + Rest', tag:'rest', tagLabel:'REST'},
+    {time:'19:00–20:30', name:'CSCA Physics', tag:'phys', tagLabel:'PHYSICS'},
+    {time:'20:30–21:30', name:'Full Anki review', tag:'hsk', tagLabel:'HSK'},
+  ],
+  Wednesday: [
+    {time:'6:50–8:10', name:'HSK 5 Vocabulary — 40 new words', tag:'hsk', tagLabel:'HSK'},
+    {time:'8:10–8:30', name:'Prep for class', tag:'rest', tagLabel:'TRANSIT'},
+    {time:'8:30–10:00', name:'初级汉语口语课 (class)', tag:'class', tagLabel:'CLASS'},
+    {time:'10:00–10:20', name:'Short break', tag:'rest', tagLabel:'REST'},
+    {time:'10:20–11:50', name:'初级汉语综合课 + 阅读课 (class)', tag:'class', tagLabel:'CLASS'},
+    {time:'11:50–12:30', name:'Lunch + Rest', tag:'rest', tagLabel:'REST'},
+    {time:'12:30–14:30', name:'HSK Vocab + Review', tag:'hsk', tagLabel:'HSK'},
+    {time:'14:30–16:00', name:'CSCA Chinese vocabulary', tag:'lang', tagLabel:'CSCA CH'},
+    {time:'16:00–16:20', name:'Break', tag:'rest', tagLabel:'REST'},
+    {time:'16:20–18:00', name:'CSCA Maths', tag:'math', tagLabel:'MATHS'},
+    {time:'18:00–19:00', name:'Dinner + Rest', tag:'rest', tagLabel:'REST'},
+    {time:'19:00–20:30', name:'CSCA Physics', tag:'phys', tagLabel:'PHYSICS'},
+    {time:'20:30–21:30', name:'Full Anki review', tag:'hsk', tagLabel:'HSK'},
+  ],
+  Thursday: [
+    {time:'6:50–8:10', name:'HSK 5 Vocabulary — 40 new words', tag:'hsk', tagLabel:'HSK'},
+    {time:'8:10–8:30', name:'Prep for class', tag:'rest', tagLabel:'TRANSIT'},
+    {time:'8:30–11:50', name:'HSK专项训练 + 综合课 + 阅读课 (class block)', tag:'class', tagLabel:'CLASS'},
+    {time:'11:50–12:30', name:'Lunch + Rest', tag:'rest', tagLabel:'REST'},
+    {time:'12:30–14:30', name:'HSK Vocab + Review', tag:'hsk', tagLabel:'HSK'},
+    {time:'14:30–16:00', name:'中华文化体验 (class)', tag:'class', tagLabel:'CLASS'},
+    {time:'16:00–16:20', name:'Break', tag:'rest', tagLabel:'REST'},
+    {time:'16:20–18:00', name:'CSCA Maths', tag:'math', tagLabel:'MATHS'},
+    {time:'18:00–19:00', name:'Dinner + Rest', tag:'rest', tagLabel:'REST'},
+    {time:'19:00–20:30', name:'CSCA Physics', tag:'phys', tagLabel:'PHYSICS'},
+    {time:'20:30–21:30', name:'Full Anki review', tag:'hsk', tagLabel:'HSK'},
+  ],
+  Friday: [
+    {time:'6:50–8:10', name:'HSK 5 Vocabulary — 40 new words', tag:'hsk', tagLabel:'HSK'},
+    {time:'8:10–8:30', name:'Prep for class', tag:'rest', tagLabel:'TRANSIT'},
+    {time:'8:30–10:00', name:'初级汉语听力课 (class)', tag:'class', tagLabel:'CLASS'},
+    {time:'10:00–10:20', name:'Short break', tag:'rest', tagLabel:'REST'},
+    {time:'10:20–11:50', name:'初级汉语口语课 + 综合课 (class)', tag:'class', tagLabel:'CLASS'},
+    {time:'11:50–12:30', name:'Lunch + Rest', tag:'rest', tagLabel:'REST'},
+    {time:'12:30–14:30', name:'HSK Vocab + Review', tag:'hsk', tagLabel:'HSK'},
+    {time:'14:30–16:00', name:'CSCA Chinese + Review', tag:'lang', tagLabel:'CSCA CH'},
+    {time:'16:00–16:20', name:'Break', tag:'rest', tagLabel:'REST'},
+    {time:'16:20–18:00', name:'CSCA Maths', tag:'math', tagLabel:'MATHS'},
+    {time:'18:00–19:00', name:'Dinner + Rest', tag:'rest', tagLabel:'REST'},
+    {time:'19:00–20:30', name:'CSCA Physics', tag:'phys', tagLabel:'PHYSICS'},
+    {time:'20:30–21:30', name:'Weekly full review — all subjects', tag:'hsk', tagLabel:'REVIEW'},
+  ],
+  Saturday: [
+    {time:'8:00–9:30', name:'HSK 5 Vocabulary — 40 new words', tag:'hsk', tagLabel:'HSK'},
+    {time:'9:30–11:00', name:'CSCA Maths — past paper', tag:'math', tagLabel:'MATHS'},
+    {time:'11:00–11:15', name:'Break', tag:'rest', tagLabel:'REST'},
+    {time:'11:15–12:30', name:'CSCA Physics — past paper', tag:'phys', tagLabel:'PHYSICS'},
+    {time:'12:30–13:30', name:'Lunch + Rest', tag:'rest', tagLabel:'REST'},
+    {time:'13:30–15:00', name:'HSK Vocab review + Anki', tag:'hsk', tagLabel:'HSK'},
+    {time:'15:00–16:30', name:'CSCA Chinese vocab', tag:'lang', tagLabel:'CSCA CH'},
+    {time:'20:00–21:00', name:'Anki evening review', tag:'hsk', tagLabel:'HSK'},
+  ],
+  Sunday: [
+    {time:'8:00–9:30', name:'HSK 5 Vocabulary — 40 new words', tag:'hsk', tagLabel:'HSK'},
+    {time:'9:30–11:00', name:'Weak subject catch-up', tag:'math', tagLabel:'STUDY'},
+    {time:'11:00–12:30', name:'HSK Vocab review', tag:'hsk', tagLabel:'HSK'},
+    {time:'12:30–13:30', name:'Lunch + Rest', tag:'rest', tagLabel:'REST'},
+    {time:'13:30–15:00', name:'CSCA Maths', tag:'math', tagLabel:'MATHS'},
+    {time:'15:00–16:30', name:'CSCA Physics', tag:'phys', tagLabel:'PHYSICS'},
+    {time:'20:00–21:00', name:'Anki evening review + weekly plan', tag:'hsk', tagLabel:'HSK'},
+  ],
+};
+
+const habits = [
+  {id:'anki', icon:'🃏', label:'Anki done', sub:'50+ words reviewed'},
+  {id:'sleep', icon:'😴', label:'Slept 8hrs', sub:'In bed by 10:30pm'},
+  {id:'phone', icon:'📵', label:'No phone waste', sub:'Study blocks protected'},
+  {id:'water', icon:'💧', label:'Drank water', sub:'Stayed hydrated'},
+  {id:'move', icon:'🚶', label:'Moved outside', sub:'At least one walk'},
+  {id:'meals', icon:'🍜', label:'Ate properly', sub:'No skipping meals'},
+];
+
+let state = {
+  wordsTotal: 650,
+  todayWords: 0,
+  todayDate: '',
+  lang:{vocab:0,mock:0},
+  cscaCh:{vocab:0,mock:0},
+  math:{concept:0,paper:0},
+  phys:{concept:0,paper:0},
+  hsk:{vocab:50,mock:0,listen:0},
+  habits:{},
+  streak: new Array(33).fill(false),
+  note:'',
+  openDay: null,
+  blocksDone:{},
+};
+
+function load() {
+  try {
+    const s = localStorage.getItem('studyos_v2');
+    if (s) { const p = JSON.parse(s); state = Object.assign(state, p); }
+  } catch(e){}
+  const today = getToday();
+  if (state.todayDate !== today) {
+    state.todayWords = 0;
+    state.todayDate = today;
+    save();
+  }
+}
+
+function save() {
+  try { localStorage.setItem('studyos_v2', JSON.stringify(state)); } catch(e){}
+}
+
+function getToday() {
+  return new Date().toISOString().slice(0,10);
+}
+
+function initDate() {
+  const now = new Date();
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('dateBadge').textContent = days[now.getDay()] + ' ' + now.getDate() + ' ' + months[now.getMonth()];
+  const diff = Math.ceil((EXAM_DATE - now) / 86400000);
+  document.getElementById('daysLeftPill').textContent = Math.max(0,diff) + ' days';
+}
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+function updateVocabUI() {
+  const total = state.wordsTotal;
+  const pct = Math.min(100, Math.round((total / TOTAL_WORDS) * 100));
+  const left = Math.max(0, TOTAL_WORDS - total);
+  const now = new Date();
+  const daysLeft = Math.max(1, Math.ceil((MOCK_START - now) / 86400000));
+  const perDay = Math.ceil(left / daysLeft);
+  document.getElementById('vocabBar').style.width = pct + '%';
+  document.getElementById('vocabPct').textContent = pct + '%';
+  document.getElementById('wordsTotalDisp').textContent = total;
+  document.getElementById('wordsLeftDisp').textContent = left;
+  document.getElementById('wordsPerDayDisp').textContent = left > 0 ? perDay : '✓';
+  document.getElementById('todayWordsDisplay').textContent = state.todayWords;
+  setBar('hskVBar','hskVPct', pct);
+}
+
+function addWords() {
+  const v = parseInt(document.getElementById('wordInput').value) || 0;
+  if (v <= 0) return;
+  state.wordsTotal = Math.min(TOTAL_WORDS, state.wordsTotal + v);
+  state.todayWords += v;
+  document.getElementById('wordInput').value = '';
+  updateVocabUI(); save();
+}
+
+function setTotal() {
+  const v = parseInt(document.getElementById('totalInput').value);
+  if (isNaN(v) || v < 0) return;
+  state.wordsTotal = Math.min(TOTAL_WORDS, v);
+  document.getElementById('totalInput').value = '';
+  updateVocabUI(); save();
+}
+
+function setBar(barId, pctId, val) {
+  const v = Math.min(100, Math.max(0, parseInt(val) || 0));
+  document.getElementById(barId).style.width = v + '%';
+  document.getElementById(pctId).textContent = v + '%';
+}
+
+function updateLang() {
+  const v1 = document.getElementById('langVocab').value;
+  const v2 = document.getElementById('langMock').value;
+  if (v1) state.lang.vocab = parseInt(v1);
+  if (v2) state.lang.mock = parseInt(v2);
+  setBar('langBar','langPct',state.lang.vocab);
+  setBar('langBar2','langPct2',state.lang.mock);
+  document.getElementById('langVocab').value = '';
+  document.getElementById('langMock').value = '';
+  save(); toast();
+}
+
+function updateCscaCh() {
+  const v1 = document.getElementById('cscaChVocab').value;
+  const v2 = document.getElementById('cscaChMock').value;
+  if (v1) state.cscaCh.vocab = parseInt(v1);
+  if (v2) state.cscaCh.mock = parseInt(v2);
+  setBar('cscaChBar','cscaChPct',state.cscaCh.vocab);
+  setBar('cscaChBar2','cscaChPct2',state.cscaCh.mock);
+  document.getElementById('cscaChVocab').value = '';
+  document.getElementById('cscaChMock').value = '';
+  save(); toast();
+}
+
+function updateMath() {
+  const v1 = document.getElementById('mathConcept').value;
+  const v2 = document.getElementById('mathPaper').value;
+  if (v1) state.math.concept = parseInt(v1);
+  if (v2) state.math.paper = parseInt(v2);
+  setBar('mathBar','mathPct',state.math.concept);
+  setBar('mathBar2','mathPct2',state.math.paper);
+  document.getElementById('mathConcept').value = '';
+  document.getElementById('mathPaper').value = '';
+  save(); toast();
+}
+
+function updatePhys() {
+  const v1 = document.getElementById('physConcept').value;
+  const v2 = document.getElementById('physPaper').value;
+  if (v1) state.phys.concept = parseInt(v1);
+  if (v2) state.phys.paper = parseInt(v2);
+  setBar('physBar','physPct',state.phys.concept);
+  setBar('physBar2','physPct2',state.phys.paper);
+  document.getElementById('physConcept').value = '';
+  document.getElementById('physPaper').value = '';
+  save(); toast();
+}
+
+function updateHsk() {
+  const v1 = document.getElementById('hskV').value;
+  const v2 = document.getElementById('hskM').value;
+  const v3 = document.getElementById('hskL').value;
+  if (v1) state.hsk.vocab = parseInt(v1);
+  if (v2) state.hsk.mock = parseInt(v2);
+  if (v3) state.hsk.listen = parseInt(v3);
+  setBar('hskVBar','hskVPct',state.hsk.vocab);
+  setBar('hskMBar','hskMPct',state.hsk.mock);
+  setBar('hskLBar','hskLPct',state.hsk.listen);
+  document.getElementById('hskV').value = '';
+  document.getElementById('hskM').value = '';
+  document.getElementById('hskL').value = '';
+  save(); toast();
+}
+
+let toastTimer;
+function toast() {
+  clearTimeout(toastTimer);
+  const el = document.getElementById('noteSaved');
+  el.textContent = '✓ Saved';
+  el.style.display = 'block';
+  toastTimer = setTimeout(() => el.style.display = 'none', 1800);
+}
+
+function buildSchedule() {
+  const container = document.getElementById('scheduleList');
+  container.innerHTML = '';
+  const dayNames = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  dayNames.forEach(day => {
+    const blocks = scheduleData[day];
+    const dayKey = day + '_' + getToday();
+    if (!state.blocksDone[dayKey]) state.blocksDone[dayKey] = {};
+    const done = Object.values(state.blocksDone[dayKey]).filter(Boolean).length;
+    const isOpen = state.openDay === day;
+
+    const card = document.createElement('div');
+    card.className = 'day-card';
+
+    const header = document.createElement('div');
+    header.className = 'day-header';
+    header.innerHTML = `
+      <div class="day-name">${day}</div>
+      <div class="day-meta">
+        <div class="day-score">${done}/${blocks.length}</div>
+        <div class="chevron ${isOpen ? 'open' : ''}">▼</div>
+      </div>
+    `;
+    header.onclick = () => { state.openDay = isOpen ? null : day; save(); buildSchedule(); };
+    card.appendChild(header);
+
+    const blocksDiv = document.createElement('div');
+    blocksDiv.className = 'day-blocks' + (isOpen ? ' open' : '');
+    blocks.forEach((b, i) => {
+      const isDone = !!state.blocksDone[dayKey][i];
+      const item = document.createElement('div');
+      item.className = 'block-item';
+      item.innerHTML = `
+        <div class="block-check ${isDone ? 'done' : ''}">${isDone ? '✓' : ''}</div>
+        <div class="block-info">
+          <div class="block-time">${b.time}</div>
+          <div class="block-name">${b.name}</div>
+        </div>
+        <div class="block-tag tag-${b.tag}">${b.tagLabel}</div>
+      `;
+      item.querySelector('.block-check').onclick = (e) => {
+        e.stopPropagation();
+        state.blocksDone[dayKey][i] = !state.blocksDone[dayKey][i];
+        save(); buildSchedule(); buildTodayBlocks();
+      };
+      blocksDiv.appendChild(item);
+    });
+    card.appendChild(blocksDiv);
+    container.appendChild(card);
+  });
+}
+
+function buildTodayBlocks() {
+  const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const today = dayNames[new Date().getDay()];
+  const blocks = scheduleData[today] || [];
+  const dayKey = today + '_' + getToday();
+  if (!state.blocksDone[dayKey]) state.blocksDone[dayKey] = {};
+
+  const container = document.getElementById('todayBlocks');
+  container.innerHTML = '';
+
+  blocks.forEach((b, i) => {
+    const isDone = !!state.blocksDone[dayKey][i];
+    const item = document.createElement('div');
+    item.className = 'block-item';
+    item.style.cssText = 'border-top:1px solid var(--border);padding:11px 0;display:flex;align-items:center;gap:12px;';
+    item.innerHTML = `
+      <div class="block-check ${isDone ? 'done' : ''}" style="flex-shrink:0;">${isDone ? '✓' : ''}</div>
+      <div class="block-info" style="flex:1;">
+        <div class="block-time">${b.time}</div>
+        <div class="block-name" style="font-size:13px;">${b.name}</div>
+      </div>
+      <div class="block-tag tag-${b.tag}">${b.tagLabel}</div>
+    `;
+    item.querySelector('.block-check').onclick = () => {
+      state.blocksDone[dayKey][i] = !state.blocksDone[dayKey][i];
+      save(); buildTodayBlocks(); buildSchedule();
+    };
+    container.appendChild(item);
+  });
+
+  const link = document.createElement('div');
+  link.style.cssText = 'font-size:11px;color:var(--muted);margin-top:10px;font-family:var(--font-head);font-weight:700;letter-spacing:0.5px;cursor:pointer;';
+  link.textContent = 'VIEW FULL SCHEDULE →';
+  link.onclick = () => {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-schedule').classList.add('active');
+    document.querySelectorAll('.nav-btn')[2].classList.add('active');
+  };
+  container.appendChild(link);
+}
+
+function buildHabits() {
+  const today = getToday();
+  if (!state.habits[today]) state.habits[today] = {};
+  const grid = document.getElementById('habitGrid');
+  grid.innerHTML = '';
+  habits.forEach(h => {
+    const el = document.createElement('div');
+    el.className = 'check-item' + (state.habits[today][h.id] ? ' checked' : '');
+    el.innerHTML = `<div class="check-item-icon">${h.icon}</div><div class="check-item-label">${h.label}</div><div class="check-item-sub">${h.sub}</div>`;
+    el.onclick = () => {
+      state.habits[today][h.id] = !state.habits[today][h.id];
+      save(); buildHabits();
+    };
+    grid.appendChild(el);
+  });
+}
+
+function buildStreak() {
+  if (!state.streak || state.streak.length < 33) state.streak = new Array(33).fill(false);
+  const row = document.getElementById('streakRow');
+  row.innerHTML = '';
+  const labels = ['M','T','W','T','F','S','S'];
+  state.streak.forEach((active, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'streak-dot' + (active ? ' active' : '');
+    dot.textContent = labels[i % 7];
+    dot.title = 'Day ' + (i+1);
+    dot.onclick = () => { state.streak[i] = !state.streak[i]; save(); buildStreak(); };
+    row.appendChild(dot);
+  });
+}
+
+function saveNote() {
+  state.note = document.getElementById('dailyNote').value;
+  save();
+  const el = document.getElementById('noteSaved');
+  el.textContent = '✓ Note saved';
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 2000);
+}
+
+function restoreAllBars() {
+  setBar('langBar','langPct',state.lang.vocab);
+  setBar('langBar2','langPct2',state.lang.mock);
+  setBar('cscaChBar','cscaChPct',state.cscaCh.vocab);
+  setBar('cscaChBar2','cscaChPct2',state.cscaCh.mock);
+  setBar('mathBar','mathPct',state.math.concept);
+  setBar('mathBar2','mathPct2',state.math.paper);
+  setBar('physBar','physPct',state.phys.concept);
+  setBar('physBar2','physPct2',state.phys.paper);
+  setBar('hskMBar','hskMPct',state.hsk.mock);
+  setBar('hskLBar','hskLPct',state.hsk.listen);
+}
+
+function init() {
+  load();
+  initDate();
+  updateVocabUI();
+  restoreAllBars();
+  buildTodayBlocks();
+  buildSchedule();
+  buildHabits();
+  buildStreak();
+  if (state.note) document.getElementById('dailyNote').value = state.note;
+}
+
+init();
+</script>
+</body>
+</html>
